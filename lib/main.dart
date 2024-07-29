@@ -14,7 +14,7 @@ void main() {
 }
 
 class MistClient {
-  static const String api = "localhost:80";
+  static const String api = "fcahs01";
   static bool authenticated = false;
   static String username = "";
   static String baseAuth = "";
@@ -61,10 +61,10 @@ class MistClient {
     String? token = await storage.read(key: "token");
     if (username != null && token != null) {
       baseAuth = "Basic ${utf8.fuse(base64).encode("$username:$token")}";
-      var response = await get(Uri.http(api, '/api/protected'), headers: {
+      var response = await get(Uri.http(api, '/api/user/$username'), headers: {
         'Authorization': baseAuth,
       });
-      if (response.statusCode == 200 && response.body == "Hello, world!") {
+      if (response.statusCode == 200) {
         authenticated = true;
         return true;
       } else {
