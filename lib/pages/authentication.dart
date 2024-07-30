@@ -115,39 +115,54 @@ Experiencing issues logging in? Please [email laryde@fcps.edu](mailto:laryde@fcp
   }
 
   void login(BuildContext context) async {
-    var response = await post(Uri.http(MistClient.api, '/api/authenticate'),
+    post(Uri.http(MistClient.api, '/api/authenticate'),
         body: jsonEncode({
           'username': _usernameController.text,
           'password': _passwordController.text,
-        }));
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
-      await MistClient.storage
-          .write(key: "username", value: _usernameController.text);
-      await MistClient.storage.write(key: "token", value: body['token']);
-      if (context.mounted) {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const LoginPreloaderPage()));
+        })).then((response) async {
+      if (response.statusCode == 200) {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        await MistClient.storage.write("username", _usernameController.text);
+        await MistClient.storage.write("token", body['token']);
+        if (context.mounted) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LoginPreloaderPage()));
+        }
+      } else {
+        if (context.mounted) {
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: const Text('Login Failed'),
+                    content:
+                        const Text('Please check your username and password.'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('OK'))
+                    ],
+                  ));
+        }
       }
-    } else {
-      if (context.mounted) {
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  title: const Text('Login Failed'),
-                  content:
-                      const Text('Please check your username and password.'),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('OK'))
-                  ],
-                ));
-      }
-    }
+    }).onError((error, stackTrace) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Login Failed'),
+                content: Text(
+                    'An unexpected error occurred.\n\n$error\n$stackTrace'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('OK'))
+                ],
+              ));
+    });
   }
 }

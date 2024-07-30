@@ -1,12 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mist_client/pages/authentication.dart';
 
-void main() {
+void main() async {
+  await GetStorage.init();
   runApp(MaterialApp(
       title: "MIST",
       home: const LoginPreloaderPage(),
@@ -14,11 +15,11 @@ void main() {
 }
 
 class MistClient {
-  static const String api = "localhost";
+  static const String api = "fcahs01";
   static bool authenticated = false;
   static String username = "";
   static String baseAuth = "";
-  static const FlutterSecureStorage storage = FlutterSecureStorage();
+  static GetStorage storage = GetStorage();
 
   static Widget scaffold(Widget page) {
     return Scaffold(appBar: appBar(), body: page);
@@ -55,8 +56,8 @@ class MistClient {
   }
 
   static Future<bool> isAuthenticated() async {
-    String? username = await storage.read(key: "username");
-    String? token = await storage.read(key: "token");
+    String? username = storage.read("username");
+    String? token = storage.read("token");
     if (username != null && token != null) {
       baseAuth = "Basic ${utf8.fuse(base64).encode("$username:$token")}";
       var response = await get(Uri.http(api, '/api/user/$username'), headers: {
