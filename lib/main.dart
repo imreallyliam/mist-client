@@ -56,6 +56,7 @@ class MistClient {
   }
 
   static Future<bool> isAuthenticated() async {
+    //TODO: role/scope specific
     String? username = storage.read("username");
     String? token = storage.read("token");
     if (username != null && token != null) {
@@ -72,5 +73,10 @@ class MistClient {
     } else {
       return false;
     }
+  }
+
+  //TODO: role/scope specific
+  static bool hasAccess(String route, String verb) {
+    return true;
   }
 }

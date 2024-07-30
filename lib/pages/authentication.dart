@@ -25,7 +25,7 @@ class LoginPreloaderPageState extends State<LoginPreloaderPage> {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => MistClient.scaffold(const HomePage())));
+                builder: (context) => MistClient.scaffold(HomePage())));
       } else {
         Navigator.pushReplacement(
             context,

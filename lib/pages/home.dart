@@ -2,19 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:mist_client/elements/eligibility.dart';
+import 'package:mist_client/main.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  HomePage({super.key});
+  final List<Widget> _widgets = [];
 
   @override
   Widget build(BuildContext context) {
+    if (MistClient.hasAccess("/api/fcpson-eligible/<id>", "GET")) {
+      _widgets.add(StudentEligibilityElement());
+    }
+    _widgets.add(comingSoon());
     return Padding(
         padding: const EdgeInsets.all(10.0),
         child: StaggeredGrid.count(
           crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 1,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          children: [StudentEligibilityElement(), comingSoon()],
+          children: _widgets,
         ));
   }
 
