@@ -14,7 +14,7 @@ void main() {
 }
 
 class MistClient {
-  static const String api = "fcahs01";
+  static const String api = "localhost";
   static bool authenticated = false;
   static String username = "";
   static String baseAuth = "";
@@ -51,9 +51,7 @@ class MistClient {
   }
 
   static Widget waveDots() {
-    return Center(
-      child: LoadingAnimationWidget.waveDots(color: Colors.white, size: 125),
-    );
+    return LoadingAnimationWidget.waveDots(color: Colors.white, size: 125);
   }
 
   static Future<bool> isAuthenticated() async {
