@@ -15,8 +15,9 @@ void main() async {
 }
 
 class MistClient {
-  static const String api = "fcahs01";
+  static const String api = "localhost";
   static bool authenticated = false;
+  static Map<String, dynamic> _permissions = {};
   static String username = "";
   static String baseAuth = "";
   static GetStorage storage = GetStorage();
@@ -56,16 +57,16 @@ class MistClient {
   }
 
   static Future<bool> isAuthenticated() async {
-    //TODO: role/scope specific
     String? username = storage.read("username");
     String? token = storage.read("token");
     if (username != null && token != null) {
       baseAuth = "Basic ${utf8.fuse(base64).encode("$username:$token")}";
-      var response = await get(Uri.http(api, '/api/user/$username'), headers: {
+      var response = await get(Uri.http(api, '/api/protected'), headers: {
         'Authorization': baseAuth,
       });
       if (response.statusCode == 200) {
         authenticated = true;
+        _permissions = jsonDecode(response.body);
         return true;
       } else {
         return false;
@@ -75,8 +76,7 @@ class MistClient {
     }
   }
 
-  //TODO: role/scope specific
   static bool hasAccess(String route, String verb) {
-    return true;
+    return _permissions[verb]?[route] ?? false;
   }
 }

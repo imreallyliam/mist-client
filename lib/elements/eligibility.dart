@@ -7,10 +7,19 @@ import 'package:http/http.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:mist_client/main.dart';
 
-class StudentEligibilityElement extends StatelessWidget {
+class StudentEligibilityElement extends StatefulWidget {
   StudentEligibilityElement({super.key});
 
   final TextEditingController _studentIdController = TextEditingController();
+
+  @override
+  State<StatefulWidget> createState() {
+    return StudentEligibilityElementState();
+  }
+}
+
+class StudentEligibilityElementState extends State<StudentEligibilityElement> {
+  Widget? render;
 
   @override
   Widget build(BuildContext context) {
@@ -20,94 +29,121 @@ class StudentEligibilityElement extends StatelessWidget {
             child: Column(
               children: [
                 const MarkdownBlock(data: "### FCPSOn Eligibility Lookup"),
-                Form(
-                    child: Column(children: [
-                  TextFormField(
-                    controller: _studentIdController,
-                    decoration: const InputDecoration(labelText: "Student ID"),
-                    onFieldSubmitted: (value) {
-                      lookupStudent(context);
-                    },
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                  ),
-                  ElevatedButton(
-                      onPressed: () {
-                        lookupStudent(context);
-                      },
-                      child: const Text("Lookup"))
-                ]))
+                initial()
               ],
             )));
   }
 
-  void lookupStudent(context) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: Text('FCPSOn Eligibility: ${_studentIdController.text}'),
-              content:
-                  StudentEligibilityResultElement(_studentIdController.text),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Close'))
-              ],
-            ));
+  Widget initial() {
+    if (render == null) {
+      return Form(
+          child: Column(children: [
+        TextFormField(
+          controller: widget._studentIdController,
+          decoration: const InputDecoration(labelText: "Student ID"),
+          onFieldSubmitted: (value) {
+            lookupStudent();
+          },
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 10.0),
+        ),
+        ElevatedButton(
+            onPressed: () {
+              lookupStudent();
+            },
+            child: const Text("Lookup")),
+      ]));
+    } else {
+      return render!;
+    }
   }
-}
 
-class StudentEligibilityResultElement extends StatefulWidget {
-  final String studentId;
-
-  const StudentEligibilityResultElement(this.studentId, {super.key});
-
-  @override
-  State<StatefulWidget> createState() {
-    return StudentEligibilityResultState();
-  }
-}
-
-class StudentEligibilityResultState
-    extends State<StudentEligibilityResultElement> {
-  Widget render = MistClient.waveDots();
-
-  @override
-  void initState() {
-    super.initState();
-    get(Uri.http(MistClient.api, '/api/fcpson-eligible/${widget.studentId}'),
+  void lookupStudent() {
+    setState(() {
+      render = MistClient.waveDots();
+    });
+    get(
+        Uri.http(MistClient.api,
+            '/api/fcpson-eligible/${widget._studentIdController.text}'),
         headers: {
           'Authorization': MistClient.baseAuth,
         }).then((response) {
       if (response.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(response.body);
 
+        Widget? icon;
+        if (body["eligible"] && !body["flagged"]) {
+          icon = const Icon(
+            Icons.check,
+            color: Colors.green,
+            size: 50.0,
+          );
+        } else if (!body["eligible"] && !body["flagged"]) {
+          icon = const Icon(
+            Icons.close,
+            color: Colors.red,
+            size: 50.0,
+          );
+        } else {
+          icon = const Icon(
+            Icons.warning,
+            color: Colors.orange,
+            size: 50.0,
+          );
+        }
+        List<Widget> toShow = [icon];
+        if (body["eligible"] && !body["flagged"]) {
+          toShow.add(const Text("Eligible"));
+        } else if (!body["eligible"] && !body["flagged"]) {
+          toShow.add(const Text("Not Eligible"));
+        } else {
+          toShow.add(const Text("Flagged"));
+        }
+
+        if (!body["isStudent"]) {
+          toShow.add(const Text(" * Please verify this student's enrollment."));
+        }
+        if (body["holds"] > 0) {
+          toShow.add(Text(
+              " * This student has ${body["holds"]} hold(s) for prior device treatment."));
+        }
+        if (body["obligations"] > 0) {
+          toShow.add(Text(
+              " * This student has ${body["obligations"]} obligation(s) for prior devices."));
+        }
+        if (body["activeCheckOuts"] > 0) {
+          toShow.add(Text(
+              " * This student has ${body["activeCheckOuts"]} checked out device(s). Please see the FCPSOn Student History report."));
+        }
+
+        if (body["devicesUsed"] > 0) {
+          toShow.add(Text(
+              " - This student has used ${body["devicesUsed"]} FCAHS device(s) recently."));
+        }
+        if (body["longCheckOuts"] > 0) {
+          toShow.add(Text(
+              " - This student has had ${body["longCheckOuts"]} device(s) checked out for over one school year."));
+        }
+        if (body["deposits"] < 1) {
+          toShow.add(const Text(
+              " - This student has not paid a deposit. Dependent on program."));
+        }
+        toShow.add(
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  render = null;
+                  widget._studentIdController.clear();
+                });
+              },
+              child: const Text("Lookup Another")),
+        );
+
         setState(() {
           render = Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MarkdownBlock(data: '''
-Eligible: ${body["eligible"] ? "Yes" : "\* **No** \*"}  
-Flagged: ${body["flagged"] ? "\* **Yes** \*" : "No"}  
-
-| ELIGIBILITY FACTOR | REQ. | CURRENT |
-| --- | --- | --- |
-| FCAHS Student | Yes | ${body["isStudent"] ? "Yes" : "\* **No** \*"} |
-| Holds | 0 | ${body["holds"]} |
-| Obligations | 0 | ${body["obligations"]} |
-| Assigned Devices | 0 | ${body["activeCheckOuts"]} |
-
-| FLAGGED FACTOR | REQ. | CURRENT |
-| --- | --- | --- |
-| Devices Used | 0 | ${body["devicesUsed"]} |
-| Long Assignments | 0 | ${body["longCheckOuts"]} |
-| Active Deposits | 1+ | ${body["deposits"]} |
-          ''')
-            ],
+            children: toShow,
           );
         });
       } else {
@@ -115,11 +151,19 @@ Flagged: ${body["flagged"] ? "\* **Yes** \*" : "No"}
           render = Column(mainAxisSize: MainAxisSize.min, children: [
             Flexible(
               child: Text(
-                '''An unexpeced error occurred while fetching the eligibility status for ${widget.studentId}.''',
+                '''An unexpeced error occurred while fetching the eligibility status for ${widget._studentIdController.text}.''',
                 softWrap: true,
                 overflow: TextOverflow.visible,
               ),
-            )
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    render = null;
+                    widget._studentIdController.clear();
+                  });
+                },
+                child: const Text("Lookup Another")),
           ]);
         });
       }
@@ -128,21 +172,24 @@ Flagged: ${body["flagged"] ? "\* **Yes** \*" : "No"}
         render = Column(mainAxisSize: MainAxisSize.min, children: [
           Flexible(
             child: Text(
-              '''An error occurred while fetching the eligibility status for ${widget.studentId}.  
+              '''An error occurred while fetching the eligibility status for ${widget._studentIdController.text}.  
   
 $error
 ''',
               softWrap: true,
               overflow: TextOverflow.visible,
             ),
-          )
+          ),
+          ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  render = null;
+                  widget._studentIdController.clear();
+                });
+              },
+              child: const Text("Lookup Another")),
         ]);
       });
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return render;
   }
 }
