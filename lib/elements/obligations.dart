@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:mist_client/main.dart';
+import 'package:mist_client/pages/obligation.dart';
 
 class ObligationElement extends StatefulWidget {
   const ObligationElement({super.key});
@@ -51,26 +52,25 @@ $outstanding outstanding obligations.
 $laptop laptops, $charger chargers, and $mifi MiFis.
 '''),
               ElevatedButton(
-                  onPressed: () {}, child: const Text("View Obligations")),
+                  onPressed: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MistClient.scaffold(
+                                    const ObligationPage())))
+                      },
+                  child: const Text("View Obligations")),
             ],
           );
         });
       } else {
         setState(() {
-          render = Text(
-            '''An unexpeced error occurred while fetching obligations: ${response.body}''',
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          );
+          render = MistClient.error(error: response.body);
         });
       }
     }).onError((error, stackTrace) {
       setState(() {
-        render = Text(
-          '''An unexpeced error occurred while fetching obligations: $error''',
-          softWrap: true,
-          overflow: TextOverflow.visible,
-        );
+        render = MistClient.error(error: error.toString());
       });
     });
   }

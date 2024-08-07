@@ -39,20 +39,12 @@ ${holds.length} active holds, preventing equipment issuance.
         });
       } else {
         setState(() {
-          render = Text(
-            '''An unexpeced error occurred while fetching holds: ${response.body}''',
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          );
+          render = MistClient.error(error: response.body);
         });
       }
     }).onError((error, stackTrace) {
       setState(() {
-        render = Text(
-          '''An unexpeced error occurred while fetching holds: $error''',
-          softWrap: true,
-          overflow: TextOverflow.visible,
-        );
+        render = MistClient.error(error: error.toString());
       });
     });
   }

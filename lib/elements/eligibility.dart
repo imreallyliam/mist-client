@@ -144,13 +144,7 @@ class StudentEligibilityElementState extends State<StudentEligibilityElement> {
       } else {
         setState(() {
           render = Column(mainAxisSize: MainAxisSize.min, children: [
-            Flexible(
-              child: Text(
-                '''An unexpeced error occurred while fetching the eligibility status for ${widget._studentIdController.text}.''',
-                softWrap: true,
-                overflow: TextOverflow.visible,
-              ),
-            ),
+            MistClient.error(error: response.body),
             ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -165,16 +159,7 @@ class StudentEligibilityElementState extends State<StudentEligibilityElement> {
     }).onError((error, stacktrace) {
       setState(() {
         render = Column(mainAxisSize: MainAxisSize.min, children: [
-          Flexible(
-            child: Text(
-              '''An error occurred while fetching the eligibility status for ${widget._studentIdController.text}.  
-  
-$error
-''',
-              softWrap: true,
-              overflow: TextOverflow.visible,
-            ),
-          ),
+          MistClient.error(error: error.toString()),
           ElevatedButton(
               onPressed: () {
                 setState(() {

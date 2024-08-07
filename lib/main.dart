@@ -56,6 +56,15 @@ class MistClient {
     return LoadingAnimationWidget.waveDots(color: Colors.white, size: 125);
   }
 
+  static Widget error({String? error}) {
+    return Text("An unexpeced error occurred.\n\n${error ?? ""}");
+  }
+
+  static Widget accessDenied() {
+    return const Text(
+        "Access denied, please contact your system administrator for assistance.");
+  }
+
   static Future<bool> isAuthenticated() async {
     String? username = storage.read("username");
     String? token = storage.read("token");

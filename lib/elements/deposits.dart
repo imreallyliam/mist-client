@@ -56,20 +56,12 @@ $refunded refunded/cost-covered deposits.
         });
       } else {
         setState(() {
-          render = Text(
-            '''An unexpeced error occurred while fetching deposits: ${response.body}''',
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          );
+          render = MistClient.error(error: response.body);
         });
       }
     }).onError((error, stackTrace) {
       setState(() {
-        render = Text(
-          '''An unexpeced error occurred while fetching deposits: $error''',
-          softWrap: true,
-          overflow: TextOverflow.visible,
-        );
+        render = MistClient.error(error: error.toString());
       });
     });
   }

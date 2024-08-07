@@ -62,20 +62,12 @@ $down down (non-functional/maintenance) assets.
         });
       } else {
         setState(() {
-          render = Text(
-            '''An unexpeced error occurred while fetching assets: ${response.body}''',
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          );
+          render = MistClient.error(error: response.body);
         });
       }
     }).onError((error, stackTrace) {
       setState(() {
-        render = Text(
-          '''An unexpeced error occurred while fetching assets: $error''',
-          softWrap: true,
-          overflow: TextOverflow.visible,
-        );
+        render = MistClient.error(error: error.toString());
       });
     });
   }
