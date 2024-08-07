@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:mist_client/elements/eligibility.dart';
+import 'package:mist_client/elements/obligations.dart';
 import 'package:mist_client/main.dart';
 
 class HomePage extends StatelessWidget {
@@ -12,6 +13,9 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (MistClient.hasAccess("/api/fcpson-eligible/<id>", "GET")) {
       _widgets.add(StudentEligibilityElement());
+    }
+    if (MistClient.hasAccess("/api/obligation", "GET")) {
+      _widgets.add(ObligationElement());
     }
     _widgets.add(comingSoon());
     return Padding(

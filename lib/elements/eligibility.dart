@@ -72,32 +72,27 @@ class StudentEligibilityElementState extends State<StudentEligibilityElement> {
       if (response.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(response.body);
 
-        Widget? icon;
+        List<Widget> toShow = [];
         if (body["eligible"] && !body["flagged"]) {
-          icon = const Icon(
+          toShow.add(const Icon(
             Icons.check,
             color: Colors.green,
             size: 50.0,
-          );
-        } else if (!body["eligible"] && !body["flagged"]) {
-          icon = const Icon(
+          ));
+          toShow.add(const Text("Eligible"));
+        } else if (!body["eligible"]) {
+          toShow.add(const Icon(
             Icons.close,
             color: Colors.red,
             size: 50.0,
-          );
+          ));
+          toShow.add(const Text("Not Eligible"));
         } else {
-          icon = const Icon(
+          toShow.add(const Icon(
             Icons.warning,
             color: Colors.orange,
             size: 50.0,
-          );
-        }
-        List<Widget> toShow = [icon];
-        if (body["eligible"] && !body["flagged"]) {
-          toShow.add(const Text("Eligible"));
-        } else if (!body["eligible"] && !body["flagged"]) {
-          toShow.add(const Text("Not Eligible"));
-        } else {
+          ));
           toShow.add(const Text("Flagged"));
         }
 
