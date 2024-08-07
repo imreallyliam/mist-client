@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
+import 'package:mist_client/elements/assets.dart';
+import 'package:mist_client/elements/deposits.dart';
 import 'package:mist_client/elements/eligibility.dart';
+import 'package:mist_client/elements/holds.dart';
 import 'package:mist_client/elements/obligations.dart';
 import 'package:mist_client/main.dart';
 
@@ -14,8 +17,17 @@ class HomePage extends StatelessWidget {
     if (MistClient.hasAccess("/api/fcpson-eligible/<id>", "GET")) {
       _widgets.add(StudentEligibilityElement());
     }
+    if (MistClient.hasAccess("/api/asset", "GET")) {
+      _widgets.add(const AssetElement());
+    }
     if (MistClient.hasAccess("/api/obligation", "GET")) {
-      _widgets.add(ObligationElement());
+      _widgets.add(const ObligationElement());
+    }
+    if (MistClient.hasAccess("/api/deposit", "GET")) {
+      _widgets.add(const DepositElement());
+    }
+    if (MistClient.hasAccess("/api/hold", "GET")) {
+      _widgets.add(const HoldElement());
     }
     _widgets.add(comingSoon());
     return Padding(
